@@ -1,0 +1,15 @@
+[id$="welcomeContainer"] {
+    padding: 2rem;
+}
+
+[id$="welcomeContainer"] > *:not(:last-child) {
+    margin-bottom: 1rem;
+}
+
+[id$="masterBottomButtonBar"] > *:not(:last-child) {
+    margin-right: .5rem;
+}
+
+[id$="seriesDetailBottomButtonBar"] > *:not(:last-child) {
+    margin-right: .5rem;
+}

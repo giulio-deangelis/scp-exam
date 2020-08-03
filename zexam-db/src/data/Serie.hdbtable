@@ -1,0 +1,7 @@
+COLUMN TABLE "Serie" (
+     "titoloSerie" NVARCHAR(60) COMMENT 'Titolo Serie',
+     "genere" NVARCHAR(60) COMMENT 'Genere',
+     "anno" NVARCHAR(4) COMMENT 'Anno',
+     "regista" NVARCHAR(60) COMMENT 'Regista',
+     PRIMARY KEY ("titoloSerie")
+)

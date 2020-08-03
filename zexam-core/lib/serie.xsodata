@@ -1,0 +1,10 @@
+service {
+    "Serie"
+	  as "Serie" navigates ("Puntate" as "Puntate");
+
+	"Puntata"
+	  as "Puntata";
+
+	association "Puntate" principal "Serie"("titoloSerie")
+	  multiplicity "1" dependent "Puntata"("Serie.titoloSerie") multiplicity "*";
+}

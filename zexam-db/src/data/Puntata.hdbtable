@@ -1,0 +1,8 @@
+COLUMN TABLE "Puntata" (
+     "Serie.titoloSerie" NVARCHAR(60) COMMENT 'Titolo Serie',
+     "titoloPuntata" NVARCHAR(60) COMMENT 'Titolo Puntata',
+     "stagione" INTEGER COMMENT 'Stagione',
+     "episodio" INTEGER COMMENT 'Episodio',
+     PRIMARY KEY ("Serie.titoloSerie", "titoloPuntata")
+)
+ 
