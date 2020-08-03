@@ -1,0 +1,57 @@
+{
+	"format_version": 1,
+	"imports": [{
+		"target_table": "Serie",
+		"source_data": {
+			"data_type": "CSV",
+			"file_name": "Serie.csv",
+			"has_header": false,
+			"dialect": "HANA",
+			"type_config": {
+				"delimiter": ","
+			}
+		},
+		"import_settings": {
+         	"include_filter" : [ ],		
+			"import_columns": [
+    			"titoloSerie",
+    			"genere",
+    			"anno",
+    			"regista"
+			]
+		},
+		"column_mappings": {
+			"titoloSerie": 1,
+			"genere": 2,
+			"anno": 3,
+			"regista": 4
+		}
+	},
+	{
+		"target_table": "Puntata",
+		"source_data": {
+			"data_type": "CSV",
+			"file_name": "Puntata.csv",
+			"has_header": false,
+			"dialect": "HANA",
+			"type_config": {
+				"delimiter": ","
+			}
+		},
+		"import_settings": {
+           	"include_filter" : [ ],		
+			"import_columns": [
+    			"Serie.titoloSerie",
+    			"titoloPuntata",
+    			"stagione",
+    			"episodio"
+			]
+		},
+		"column_mappings": {
+			"Serie.titoloSerie": 1,
+			"titoloPuntata": 2,
+			"stagione": 3,
+			"episodio": 4
+		}
+	}]
+}
