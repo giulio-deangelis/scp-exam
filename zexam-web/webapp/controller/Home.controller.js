@@ -21,24 +21,25 @@ sap.ui.define([
 		},
 
 		onSeriesPress: function (ev) {
+		    const that = this;
+		    const context = ev.getParameter("listItem").getBindingContext();
+		    const id = context.getObject().titoloSerie.replace(' ', "%20");
+			const path = "/Serie('" + id + "')/Puntate";
+		    
 			this.navTo("seriesDetail");
 
-			// get the selected element's path from the binding context and bind the form
-			const ctxPath = ev.getParameter("listItem").getBindingContextPath();
-			this.byId("seriesDetailsForm").bindElement({
-				path: ctxPath
-			});
-
+            // bind the series form
+			const form = this.byId("seriesDetailsForm");
+			form.setModel(context.getModel());
+			form.bindElement(context.getPath());
+		
 			// bind the table
-			this.getView().getModel().read("/Serie", {
-				urlParameters: {
-					"$expand": "Puntate"
-				},
+			this.getView().getModel().read(path, {
 				success: function (data) {
-					this.byId("epsTable").setModel(new JSONModel(data));
+					that.byId("epsTable").setModel(new JSONModel(data));
 				},
 				error: function (err) {
-					this._toast("fetchError");
+					that._toast("fetchError");
 					console.log(err.message);
 				}
 			});
@@ -49,6 +50,7 @@ sap.ui.define([
 		},
 
 		onSaveSeriesButtonPress: function () {
+		    const that = this;
 			const model = this.getView().getModel();
 			const newSeriesModel = this.byId("seriesCreationForm").getModel();
 
@@ -58,10 +60,10 @@ sap.ui.define([
 			// save series
 			model.create("/Serie", newSeriesModel.getData(), {
 				success: function () {
-					this._toast("seriesCreationSuccessMsg");
+					that._toast("seriesCreationSuccessMsg");
 				},
 				error: function (err) {
-					this._toast("seriesCreationErrorMsg");
+					that._toast("seriesCreationErrorMsg");
 					console.log(err.message);
 				}
 			});
@@ -123,11 +125,15 @@ sap.ui.define([
 		_bindModels: function () {
 			// main odata model
 			const model = new ODataModel("/core/serie.xsodata");
+			this.getView().setModel(model);
 			model.read("/Serie", {
 				async: true,
+				urlParameters: {
+				    "$format": "json"
+				},
 				success: function (data) {
 					this.byId("seriesList").setModel(new JSONModel(data));
-				},
+				}.bind(this),
 				error: function (err) {
 					console.log(err.message);
 				}

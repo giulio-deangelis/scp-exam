@@ -46,6 +46,8 @@
                             <Text text="{genere}"/>
                             <Label text="{i18n>anno}"/>
                             <Text text="{anno}"/>
+                            <Label text="{i18n>regista}"/>
+                            <Text text="{regista}"/>
                           </sap.ui.layout.form:content>
                         </sap.ui.layout.form:SimpleForm>
                         <Label text="{i18n>puntate}" id="epsLabel"/>
@@ -56,7 +58,7 @@
                                 <Text text="{episodio}"/>
                                 <Text text="{stagione}"/>
                                 <Text text="{titoloPuntata}"/>
-                                <Text text="{regista}"/>
+                                <Text text="{/Serie/regista}"/>
                               </cells>
                             </ColumnListItem>
                           </items>

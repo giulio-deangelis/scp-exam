@@ -1,0 +1,39 @@
+<edmx:Edmx Version="1.0" xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx">
+	<edmx:DataServices m:DataServiceVersion="2.0" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata">
+		<Schema Namespace="default" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices"
+			xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns="http://schemas.microsoft.com/ado/2008/09/edm">
+			<EntityType Name="SerieType">
+				<Key>
+					<PropertyRef Name="titoloSerie"/>
+				</Key>
+				<Property Name="titoloSerie" Type="Edm.String" Nullable="false" MaxLength="60"/>
+				<Property Name="genere" Type="Edm.String" MaxLength="60"/>
+				<Property Name="anno" Type="Edm.String" MaxLength="4"/>
+				<Property Name="regista" Type="Edm.String" MaxLength="60"/>
+				<NavigationProperty Name="Puntate" Relationship="default.PuntateType" FromRole="SeriePrincipal" ToRole="PuntataDependent"/>
+			</EntityType>
+			<EntityType Name="PuntataType">
+				<Key>
+					<PropertyRef Name="Serie.titoloSerie"/>
+					<PropertyRef Name="titoloPuntata"/>
+				</Key>
+				<Property Name="Serie.titoloSerie" Type="Edm.String" Nullable="false" MaxLength="60"/>
+				<Property Name="titoloPuntata" Type="Edm.String" Nullable="false" MaxLength="60"/>
+				<Property Name="stagione" Type="Edm.Int32"/>
+				<Property Name="episodio" Type="Edm.Int32"/>
+			</EntityType>
+			<Association Name="PuntateType">
+				<End Type="default.SerieType" Role="SeriePrincipal" Multiplicity="1"/>
+				<End Type="default.PuntataType" Role="PuntataDependent" Multiplicity="*"/>
+			</Association>
+			<EntityContainer Name="v2" m:IsDefaultEntityContainer="true">
+				<EntitySet Name="Serie" EntityType="default.SerieType"/>
+				<EntitySet Name="Puntata" EntityType="default.PuntataType"/>
+				<AssociationSet Name="Puntate" Association="default.PuntateType">
+					<End Role="SeriePrincipal" EntitySet="Serie"/>
+					<End Role="PuntataDependent" EntitySet="Puntata"/>
+				</AssociationSet>
+			</EntityContainer>
+		</Schema>
+	</edmx:DataServices>
+</edmx:Edmx>
