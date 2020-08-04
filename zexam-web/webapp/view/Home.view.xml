@@ -15,7 +15,6 @@
                         </List>
                         <HBox width="100%" id="masterBottomButtonBar" justifyContent="End">
                           <items>
-                            <Button text="Test" press="onTestButtonPress"/>
                             <Button press="onAddButtonPress" id="addButton" icon="sap-icon://add"/>
                           </items>
                         </HBox>
@@ -58,7 +57,7 @@
                                 <Text text="{episodio}"/>
                                 <Text text="{stagione}"/>
                                 <Text text="{titoloPuntata}"/>
-                                <Text text="{/Serie/regista}"/>
+                                <Text text="{regista}"/>
                               </cells>
                             </ColumnListItem>
                           </items>
@@ -103,11 +102,11 @@
                           <sap.ui.layout.form:content>
                             <sap.ui.core:Title text="{i18n>createNewSeries}"/>
                             <Label text="{i18n>titoloSerie}"/>
-                            <Input value="{Serie>titolo}"/>
-                            <Label text="{i18n>genere}"/>
-                            <Input value="{Serie>genere}"/>
+                            <Input value="{/titoloSerie}"/>
+                        <Label text="{i18n>genere}"/>
+                            <Input value="{/genere}"/>
                             <Label text="{i18n>anno}"/>
-                            <DatePicker value="{Serie>anno}"/>
+                            <Input value="{/anno}" maxLength="4"/>
                           </sap.ui.layout.form:content>
                         </sap.ui.layout.form:SimpleForm>
                         <Panel width="100%" expandable="true" expanded="true">
@@ -122,13 +121,13 @@
                                 <sap.ui.layout.form:SimpleForm xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" editable="true" layout="ResponsiveGridLayout" xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" id="episodeCreationForm">
                                   <sap.ui.layout.form:content>
                                     <Label text="{i18n>episodio}"/>
-                                    <Input value="{/number}"/>
+                                    <Input value="{/episodio}"/>
                                     <Label text="{i18n>stagione}"/>
-                                    <Input value="{/season}"/>
+                                    <Input value="{/stagione}"/>
                                     <Label text="{i18n>titoloEpisodio}"/>
-                                    <Input value="{/title}"/>
+                                    <Input value="{/titoloPuntata}"/>
                                     <Label text="{i18n>regista}"/>
-                                    <Input value="{/producer}"/>
+                                    <Input value="{/regista}"/>
                                   </sap.ui.layout.form:content>
                                 </sap.ui.layout.form:SimpleForm>
                                 <Button press="onSaveEpButtonPress" text="{i18n>saveEpisode}" id="saveEpButton"/>
@@ -141,14 +140,14 @@
                                     </Toolbar>
                                   </headerToolbar>
                                   <content>
-                                    <Table items="{/episodes}" noDataText="{i18n>noData}" id="episodesCreationTable" mode="MultiSelect">
+                                    <Table items="{/episodi}" noDataText="{i18n>noData}" id="episodesCreationTable" mode="MultiSelect">
                                       <items>
                                         <ColumnListItem type="Active">
                                           <cells>
-                                            <Text text="{number}"/>
-                                            <Text text="{season}"/>
-                                            <Text text="{title}"/>
-                                            <Text text="{producer}"/>
+                                            <Text text="{episodio}"/>
+                                            <Text text="{stagione}"/>
+                                            <Text text="{titoloPuntata}"/>
+                                            <Text text="{regista}"/>
                                           </cells>
                                         </ColumnListItem>
                                       </items>
