@@ -9,11 +9,12 @@ sap.ui.define([
 	"../util/extensions/String"
 ], function (Controller, MessageToast, ODataModel, JSONModel) {
 	"use strict";
-	
+
 	return Controller.extend("zexam.zexam-web.controller.Home", {
 
 		onInit: function () {
-		    this._currentSeriesId = null;
+			this._currentSeries = null;
+			this._currentEpisodes = null;
 			this._bindModels();
 		},
 
@@ -37,81 +38,58 @@ sap.ui.define([
 
 			// bind the episodes table
 			this.getView().getModel().read(path, {
+				async: true,
 				success: function (data) {
 					for (const ep of data.results) ep.regista = producer;
-					that.byId("epsTable").setModel(new JSONModel(data));
+					that.byId("episodesTable").setModel(new JSONModel(data));
+					// keep a reference to the currently viewed episodes
+					that._currentEpisodes = {
+						episodi: data.results
+					};
 				},
 				error: function (err) {
 					that._toast("fetchError");
 					console.log(err.message);
 				}
 			});
+
+			// keep a reference to the currently viewed series
+			const modelData = this.byId("seriesDetailsForm")
+				.getBindingContext()
+				.getObject();
+			this._currentSeries = {
+			    titoloSerie: modelData.titoloSerie,
+				genere: modelData.genere,
+				anno: modelData.anno,
+				regista: modelData.regista
+			};
 		},
 
 		onAddButtonPress: function () {
 			this.navTo("seriesCreation");
-			this._currentSeriesId = null;
+			this._currentSeries = null;
+			this._currentEpisodes = null;
 		},
-		
+
 		onEditButtonPress: function () {
-			this._currentSeriesId = this.byId("seriesDetailsForm")
-			    .getBindingContext()
-			    .getObject()
-			    .titoloSerie;
-			    
 			this.navTo("seriesCreation");
+
+			const currentSeriesCopy = Object.assign({}, this._currentSeries);
+			const currentEpisodesCopy = Object.assign({}, this._currentEpisodes);
+
+			// copy data from the details to the creation form
+			this.byId("seriesCreationForm").getModel().setData(currentSeriesCopy);
+
+			// do the same for the episodes table
+			const episodesCreationModel = this.byId("episodesCreationTable").getModel();
+			episodesCreationModel.setData(currentEpisodesCopy);
+			episodesCreationModel.refresh(true);
 		},
 
 		onSaveSeriesButtonPress: function (ev) {
-// 			const that = this;
-// 			const model = this.getView().getModel();
-// 			const newSeriesModel = this.byId("seriesCreationForm").getModel();
-// 			const newEpsModel = this.byId("episodesCreationTable").getModel();
-// 			const seriesId = newSeriesModel.getData().titoloSerie;
-// 			const episodesPath = "/Serie('" + seriesId + "')/Puntate";
-
-			/* Logica di procedimento:
-			 * Quando currentSeriesId è null, allora l'operazione corrente è di create,
-			 * mentre se è definito sarà un'operazione di update.
-			 * L'operazione di create andrà a fare un batch di create sull'odata
-			 * utilizzando gli appositi metodi di batch, creando sia le serie
-			 * che gli episodi associati a quella serie.
-			 * L'operazione di update invece andrà prima di tutto a tenere un riferimento
-			 * degli episodi originali e di compararli alla lista degli episodi modificata
-			 * dall'utente. Quando un episodio esiste nella nuova lista ma non è presente
-			 * nella vecchia, allora si farà un'operazione di create, mentre se un episodio
-			 * esiste nella vecchia ma non nella nuova, allora si farà una delete.
-			 * Nella validazione bisogna vietare duplicati.
-		     */
-
-            if (this._currentSeriesId !== null)
-                this._updateSeries();
-            else this._createSeries();
-
-			// input validation
-			// TODO
-
-// 			model.create("/Serie", newSeriesModel.getData(), {
-// 				async: true,
-// 				success: function () {
-// 					that._toast("seriesCreationSuccessMsg");
-// 					// save episodes
-// 					model.create(episodesPath, newEpsModel.getData().episodi[0], {
-// 						async: true,
-// 						success: function () {
-// 						    that._toast("episodesCreationSuccessMsg")
-// 						},
-// 						error: function (err) {
-// 						    that._toast("episodesCreationErrorMsg");
-// 							console.log("Failed to create episodes");
-// 						}
-// 					});
-// 				},
-// 				error: function (err) {
-// 					that._toast("seriesCreationErrorMsg");
-// 					console.log(err.message);
-// 				}
-// 			});
+			if (this._currentSeries !== null)
+				this._updateSeries();
+			else this._createSeries();
 		},
 
 		onSaveEpButtonPress: function () {
@@ -125,6 +103,9 @@ sap.ui.define([
 			this._assertNotBlank(newEpisode.stagione);
 			this._assertNotBlank(newEpisode.titoloPuntata);
 			this._assertNotBlank(newEpisode.regista);
+
+			// check duplicates
+			// TODO
 
 			// push the episode to the table's model
 			newEpisodes.episodi.push(newEpisode);
@@ -142,9 +123,9 @@ sap.ui.define([
 			const indexes = table.getSelectedItems()
 				.map(it => it.getBindingContextPath().substringAfterLast("/"));
 
-			for (let i = newEps.episodes.length - 1; i >= 0; --i) {
+			for (let i = newEps.episodi.length - 1; i >= 0; --i) {
 				if (indexes.includes(i.toString()))
-					newEps.episodes.splice(i, 1);
+					newEps.episodi.splice(i, 1);
 			}
 
 			table.removeSelections(true);
@@ -154,22 +135,115 @@ sap.ui.define([
 		onDeleteButtonPress: function () {
 			MessageToast.show("Not implemented");
 		},
-		
+
 		_createSeries: function () {
-		    
+			const that = this;
+			const model = this.getView().getModel();
+			const newSeriesModel = this.byId("seriesCreationForm").getModel();
+			const newEpsModel = this.byId("episodesCreationTable").getModel();
+			const seriesId = newSeriesModel.getData().titoloSerie;
+			const batchId = "series";
+
+			model.setDeferredGroups([batchId]);
+
+			// create series
+			model.create("/Serie", newSeriesModel.getData(), { groupId: batchId });
+
+			// create episodes
+			for (const episodio of newEpsModel.getData().episodi) {
+				episodio["Serie.titoloSerie"] = seriesId;
+				model.create("/Puntata", episodio, { groupId: batchId });
+			}
+
+			model.submitChanges({
+				groupId: batchId,
+				success: function (data) {
+					that._toast("seriesCreationSuccessMsg");
+				},
+				error: function (err) {
+					that._toast("seriesCreationErrorMsg");
+					console.log(err.message);
+				}
+			});
 		},
-		
-		_updateSeries: function() {
-		    
+
+		_updateSeries: function () {
+			const that = this;
+			const model = this.getView().getModel();
+
+			// the series and episodes prior to the user's changes
+			const originalSeries = this._currentSeries;
+			const originalEpisodes = this._currentEpisodes.episodi;
+
+			// the new series info and episodes changed by the user
+			const updatedSeries = this.byId("seriesCreationForm").getModel().getData();
+			const updatedEpisodes = this.byId("episodesCreationTable").getModel().getData().episodi;
+
+			// this will change if the user updates the series' title, and will be used to update its episodes
+			let currentSeriesTitle = originalSeries.titoloSerie;
+
+			// assign a group id for the batch request
+			const batchId = "series";
+			this.getView().getModel().setDeferredGroups([batchId]);
+
+			// helper function that checks whether the given array contains the episode
+			const containsEpisode = function (episodes, episode) {
+				return episodes.findIndex(ep => {
+					if (ep.episodio === episode.episodio
+					        || ep.titoloPuntata === episode.titoloPuntata) {
+						return true;
+					}
+					return false;
+				}) >= 0;
+			};
+
+			// trigger an update on the series only if the user changes one of its fields
+			if (updatedSeries.titoloSerie !== this._currentSeries.titoloSerie
+			        || updatedSeries.anno !== this._currentSeries.anno
+			        || updatedSeries.genere !== this._currentSeries.genere) {
+				model.update(this._getSeriesPath(currentSeriesTitle), updatedSeries, { groupId: batchId });
+				currentSeriesTitle = updatedSeries.titoloSerie; // update the title in case it was modified
+			}
+
+// 			// create any new episodes and update those that were modified
+// 			for (const episode of updatedEpisodes) {
+// 				const path = this._getEpisodePath(currentSeriesTitle, episode.titoloPuntata);
+// 				if (containsEpisode(originalEpisodes, episode))
+// 					model.update(path, episode, { groupId: batchId });
+// 				else model.create("/Puntata", episode, { groupId: batchId });
+// 			}
+
+			// delete all the episodes that the user removed
+			for (const episode of originalEpisodes) {
+				if (!containsEpisode(updatedEpisodes, episode)) {
+					const path = this._getEpisodePath(currentSeriesTitle, episode.titoloPuntata);
+					model.remove(path, { groupId: batchId });
+				}
+			}
+
+			// trigger the batch request
+			model.submitChanges({
+				groupId: batchId,
+				success: function () {
+					that._toast("seriesUpdateSuccessMsg");
+				},
+				error: function (err) {
+					that._toast("seriesUpdateErrorMsg");
+					console.log(err);
+				}
+			});
 		},
-		
-		_deleteSeries: function() {
-		    
+
+		_deleteSeries: function () {
+
 		},
 
 		_bindModels: function () {
 			// main odata model
-			const model = new ODataModel("/core/serie.xsodata");
+			const model = new ODataModel("/core/serie.xsodata", {
+			    defaultUpdateMethod: sap.ui.model.odata.UpdateMethod.Put
+			});
+			
 			this.getView().setModel(model);
 			model.read("/Serie", {
 				async: true,
@@ -188,7 +262,8 @@ sap.ui.define([
 			const newSeries = new JSONModel({
 				titoloSerie: null,
 				genere: null,
-				anno: null
+				anno: null,
+				regista: null
 			});
 			this.byId("seriesCreationForm").setModel(newSeries);
 
@@ -206,6 +281,14 @@ sap.ui.define([
 				episodi: []
 			});
 			this.byId("episodesCreationTable").setModel(newEpisodes);
+		},
+
+		_getEpisodePath: function (titoloSerie, titoloPuntata) {
+			return "/Puntata(Serie.titoloSerie='" + titoloSerie + "',titoloPuntata='" + titoloPuntata + "')";
+		},
+		
+		_getSeriesPath: function (titoloSerie) {
+		    return "/Serie('" + titoloSerie + "')";
 		},
 
 		_toast: function (i18nProperty) {

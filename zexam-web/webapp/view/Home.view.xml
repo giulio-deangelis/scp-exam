@@ -1,5 +1,5 @@
 <mvc:View controllerName="zexam.zexam-web.controller.Home" xmlns:mvc="sap.ui.core.mvc" displayBlock="true" xmlns="sap.m">
-  <Shell id="shell">
+  <Shell id="shell" appWidthLimited="false">
     <App id="app">
       <pages>
         <Page id="page" title="{i18n>title}">
@@ -50,7 +50,7 @@
                           </sap.ui.layout.form:content>
                         </sap.ui.layout.form:SimpleForm>
                         <Label text="{i18n>puntate}" id="epsLabel"/>
-                        <Table items="{/results}" noDataText="{i18n>noData}" id="epsTable">
+                        <Table items="{/results}" noDataText="{i18n>noData}" id="episodesTable">
                           <items>
                             <ColumnListItem type="Active">
                               <cells>
@@ -107,6 +107,8 @@
                             <Input value="{/genere}"/>
                             <Label text="{i18n>anno}"/>
                             <Input value="{/anno}" maxLength="4"/>
+                            <Label text="{i18n>regista}"/>
+                            <Input value="{/regista}"/>
                           </sap.ui.layout.form:content>
                         </sap.ui.layout.form:SimpleForm>
                         <Panel width="100%" expandable="true" expanded="true">
