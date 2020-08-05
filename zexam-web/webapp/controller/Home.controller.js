@@ -18,7 +18,6 @@ sap.ui.define([
     Comparator
 ) {
     "use strict";
-
     return Controller.extend("zexam.zexam-web.controller.Home", {
 
         onInit: function () {
@@ -30,13 +29,19 @@ sap.ui.define([
 
         navTo: function (id) {
             this.byId("splitter").toDetail(this.createId(id));
+            /* Nota: si può passare una payload al metodo toDetail
+             * che verrà reso disponibile nell'evento "beforeShow"
+             * della Page di dettaglio. In questo modo si può risparmiare
+             * su qualche variabile globale.
+             * https://sapui5.hana.ondemand.com/#/api/sap.m.SplitContainer%23methods/toDetail
+             */
         },
 
         onSeriesPress: function (ev) {
             const that = this;
             const context = ev.getParameter("listItem").getBindingContext();
             const id = context.getObject().titoloSerie.replace(" ", "%20");
-            const path = "/Serie('" + id + "')/Puntate";
+            const path = `/Serie('${id}')/Puntate`;
             const producer = context.getObject().regista;
 
             this.navTo("seriesDetail");
@@ -59,7 +64,6 @@ sap.ui.define([
                 },
                 error: function (err) {
                     that._error("fetchError");
-                    console.error(err);
                 }
             });
 
@@ -123,6 +127,8 @@ sap.ui.define([
                     return;
                 }
             }
+            
+            newEpisode["Serie.titoloSerie"] = this._currentSeries.titoloSerie;
 
             // push the episode to the table's model
             newEpisodes.episodi.push(newEpisode);
@@ -150,7 +156,7 @@ sap.ui.define([
         },
 
         onDeleteButtonPress: function () {
-            MessageToast.show("Not implemented");
+            this._deleteSeries();
         },
 
         _createSeries: function () {
@@ -178,12 +184,17 @@ sap.ui.define([
 
             model.submitChanges({
                 groupId: batchId,
-                success: function (data) {
-                    that._toast("seriesCreationSuccess");
+                success: function (data, res) {
+                    if (that._isError(res.body)) {
+                        that._error("seriesCreationError");
+                    } else {
+                        that._toast("seriesCreationSuccess");
+                        that._refreshModel();
+                        that.navTo("welcome");
+                    }
                 },
                 error: function (err) {
                     that._error("seriesCreationError");
-                    console.error(err);
                 }
             });
         },
@@ -210,7 +221,17 @@ sap.ui.define([
             // trigger an update on the series only if the user changes one of its fields
             if (!Comparator.shallowEquals(originalSeries, updatedSeries)) {
                 model.update(this._getSeriesPath(currentSeriesTitle), updatedSeries, { groupId: batchId });
-                currentSeriesTitle = updatedSeries.titoloSerie; // update the title in case it was modified
+                
+                // update the series title for each episode if it was modified
+                if (updatedSeries.titoloSerie !== originalSeries.titoloSerie) {
+                    currentSeriesTitle = updatedSeries.titoloSerie;
+                    for (const episode of originalEpisodes) {
+                        episode.titoloSerie = currentSeriesTitle;
+                        model.update(this._getEpisodePath(originalSeries.titoloSerie, episode.titoloPuntata), {
+                            groupId: batchId
+                        });
+                    }
+                }
             }
 
             // create any new episodes and update those that were modified
@@ -224,7 +245,7 @@ sap.ui.define([
                 } else { // update only if something was modified
                     const ep = originalEpisodes[index];
                     if (ep.stagione !== episode.stagione || ep.regista !== episode.regista) {
-                        const path = this._getEpisodePath(currentSeriesTitle, episode.titoloPuntata);
+                        const path = this._getEpisodePath(originalSeries.titoloSerie, episode.titoloPuntata);
                         model.update(path, episode, { groupId: batchId });
                     }
                 }
@@ -246,19 +267,51 @@ sap.ui.define([
             model.submitChanges({
                 groupId: batchId,
                 success: function (data, res) {
-                    if (that._isError(res.body))
+                    if (that._isError(res.body)) {
                         that._error("seriesUpdateError");
-                    else that._toast("seriesUpdateSuccess");
+                    } else {
+                        that._toast("seriesUpdateSuccess");
+                        that._refreshModel();
+                        // TODO navigate back and update the details
+                    }
                 },
                 error: function (err) {
                     that._error("seriesUpdateError");
-                    console.error(err);
                 }
             });
         },
 
         _deleteSeries: function () {
+            const that = this;
+            const model = this.getView().getModel();
+            const seriesTitle = this._currentSeries.titoloSerie;
+            const batchId = "series";
 
+            model.setDeferredGroups([batchId]);
+            
+            model.remove(`/Serie('${seriesTitle}')`, { groupId: batchId });
+            for (const ep of this._currentEpisodes.episodi) {
+                model.remove(this._getEpisodePath(seriesTitle, ep.titoloPuntata), {
+                    groupId: batchId
+                });
+            }
+            
+            model.submitChanges({
+                groupId: batchId,
+                async: true,
+                success: function (data, res) {
+                    if (that._isError(res.body)) {
+                        that._error("seriesDeletionError");
+                    } else {
+                        that._toast("seriesDeletionSuccess");
+                        that.navTo("welcome");
+                        that._refreshModel();
+                    }
+                },
+                error: function (err) {
+                    that._error("seriesDeletionError");
+                }
+            });
         },
 
         _bindModels: function () {
@@ -268,19 +321,8 @@ sap.ui.define([
             });
 
             this.getView().setModel(model);
-            model.read("/Serie", {
-                async: true,
-                urlParameters: {
-                    "$format": "json"
-                },
-                success: function (data) {
-                    this.byId("seriesList").setModel(new JSONModel(data));
-                }.bind(this),
-                error: function (err) {
-                    console.log(err.message);
-                }
-            });
-
+            this._refreshModel();
+            
             // model for the series creation form
             const newSeries = new JSONModel({
                 titoloSerie: null,
@@ -305,13 +347,29 @@ sap.ui.define([
             });
             this.byId("episodesCreationTable").setModel(newEpisodes);
         },
+        
+        _refreshModel: function () {
+            const that = this;
+            const model = this.getView().getModel();
+            model.read("/Serie", {
+                async: true,
+                success: function (data, res) {
+                    if (that._isError(res.body))
+                        that._error("fetchError");
+                    else that.byId("seriesList").setModel(new JSONModel(data));
+                },
+                error: function (err) {
+                    that._error("fetchError");
+                }
+            });
+        },
 
         _getEpisodePath: function (titoloSerie, titoloPuntata) {
-            return "/Puntata(Serie.titoloSerie='" + titoloSerie + "',titoloPuntata='" + titoloPuntata + "')";
+            return `/Puntata(Serie.titoloSerie='${titoloSerie}',titoloPuntata='${titoloPuntata}')`;
         },
 
         _getSeriesPath: function (titoloSerie) {
-            return "/Serie('" + titoloSerie + "')";
+            return `/Serie('${titoloSerie}')`;
         },
 
         _validateEpisode: function (episode) {
@@ -356,11 +414,11 @@ sap.ui.define([
             // temporary way to check if a response is an error
             return body.includes("error");
         },
-
+        
         _toast: function (i18nProperty) {
             MessageToast.show(this._i18n(i18nProperty));
         },
-        
+
         _error: function (i18nProperty) {
             MessageBox.error(this._i18n(i18nProperty), {
                 title: this._i18n("error")
