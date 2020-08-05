@@ -115,6 +115,8 @@ sap.ui.define([
             const newEpisode = newEpisodeModel.getData();
             const newEpisodes = newEpisodesModel.getData();
 
+            this._trimStrings(newEpisode);
+
             // input validation
             if (!this._validateEpisode(newEpisode))
                 return;
@@ -127,7 +129,7 @@ sap.ui.define([
                     return;
                 }
             }
-            
+
             newEpisode["Serie.titoloSerie"] = this._currentSeries.titoloSerie;
 
             // push the episode to the table's model
@@ -162,23 +164,24 @@ sap.ui.define([
         _createSeries: function () {
             const that = this;
             const model = this.getView().getModel();
-            const newSeriesModel = this.byId("seriesCreationForm").getModel();
-            const newEpsModel = this.byId("episodesCreationTable").getModel();
-            const seriesId = newSeriesModel.getData().titoloSerie;
+            const newSeries = this.byId("seriesCreationForm").getModel().getData();
+            const newEpisodes = this.byId("episodesCreationTable").getModel().getData();
             const batchId = "series";
 
             model.setDeferredGroups([batchId]);
 
+            this._trimStrings(newSeries);
+
             // validate the series
-            if (!this._validateSeries(newSeriesModel.getData()))
+            if (!this._validateSeries(newSeries))
                 return;
 
             // create the series
-            model.create("/Serie", newSeriesModel.getData(), { groupId: batchId });
+            model.create("/Serie", newSeries, { groupId: batchId });
 
             // create its episodes
-            for (const episodio of newEpsModel.getData().episodi) {
-                episodio["Serie.titoloSerie"] = seriesId;
+            for (const episodio of newEpisodes.episodi) {
+                episodio["Serie.titoloSerie"] = newSeries.titoloSerie;
                 model.create("/Puntata", episodio, { groupId: batchId });
             }
 
@@ -212,7 +215,7 @@ sap.ui.define([
             const updatedEpisodes = this.byId("episodesCreationTable").getModel().getData().episodi;
 
             // this will change if the user updates the series' title, and will be used to update its episodes
-            let currentSeriesTitle = originalSeries.titoloSerie;
+            let updatedSeriesTitle = originalSeries.titoloSerie;
 
             // assign a group id for the batch request
             const batchId = "series";
@@ -220,16 +223,15 @@ sap.ui.define([
 
             // trigger an update on the series only if the user changes one of its fields
             if (!Comparator.shallowEquals(originalSeries, updatedSeries)) {
-                model.update(this._getSeriesPath(currentSeriesTitle), updatedSeries, { groupId: batchId });
-                
+                model.update(this._getSeriesPath(updatedSeriesTitle), updatedSeries, { groupId: batchId });
+
                 // update the series title for each episode if it was modified
                 if (updatedSeries.titoloSerie !== originalSeries.titoloSerie) {
-                    currentSeriesTitle = updatedSeries.titoloSerie;
+                    updatedSeriesTitle = updatedSeries.titoloSerie;
                     for (const episode of originalEpisodes) {
-                        episode.titoloSerie = currentSeriesTitle;
-                        model.update(this._getEpisodePath(originalSeries.titoloSerie, episode.titoloPuntata), {
-                            groupId: batchId
-                        });
+                        episode.titoloSerie = updatedSeriesTitle;
+                        const path = this._getEpisodePath(originalSeries.titoloSerie, episode.titoloPuntata);
+                        model.update(path, { groupId: batchId });
                     }
                 }
             }
@@ -258,7 +260,7 @@ sap.ui.define([
                     && ep.titoloPuntata === original.titoloPuntata
                 );
                 if (index < 0) {
-                    const path = this._getEpisodePath(currentSeriesTitle, original.titoloPuntata);
+                    const path = this._getEpisodePath(updatedSeriesTitle, original.titoloPuntata);
                     model.remove(path, { groupId: batchId });
                 }
             }
@@ -288,14 +290,14 @@ sap.ui.define([
             const batchId = "series";
 
             model.setDeferredGroups([batchId]);
-            
+
             model.remove(`/Serie('${seriesTitle}')`, { groupId: batchId });
             for (const ep of this._currentEpisodes.episodi) {
                 model.remove(this._getEpisodePath(seriesTitle, ep.titoloPuntata), {
                     groupId: batchId
                 });
             }
-            
+
             model.submitChanges({
                 groupId: batchId,
                 async: true,
@@ -322,7 +324,7 @@ sap.ui.define([
 
             this.getView().setModel(model);
             this._refreshModel();
-            
+
             // model for the series creation form
             const newSeries = new JSONModel({
                 titoloSerie: null,
@@ -347,7 +349,7 @@ sap.ui.define([
             });
             this.byId("episodesCreationTable").setModel(newEpisodes);
         },
-        
+
         _refreshModel: function () {
             const that = this;
             const model = this.getView().getModel();
@@ -410,11 +412,20 @@ sap.ui.define([
             };
         },
 
+        _trimStrings: function (obj) {
+            const keys = Object.keys(obj);
+            for (const key of keys) {
+                const prop = obj[key];
+                if (typeof prop === "string")
+                    obj[key] = prop.trim();
+            }
+        },
+
         _isError: function (body) {
             // temporary way to check if a response is an error
             return body.includes("error");
         },
-        
+
         _toast: function (i18nProperty) {
             MessageToast.show(this._i18n(i18nProperty));
         },
