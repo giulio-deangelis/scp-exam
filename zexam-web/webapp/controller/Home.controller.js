@@ -40,7 +40,7 @@ sap.ui.define([
         onSeriesPress: function (ev) {
             const that = this;
             const context = ev.getParameter("listItem").getBindingContext();
-            const id = context.getObject().titoloSerie.replace(" ", "%20");
+            const id = context.getObject().titoloSerie.replaceAll(" ", "%20");
             const path = `/Serie('${id}')/Puntate`;
             const producer = context.getObject().regista;
 
@@ -114,6 +114,7 @@ sap.ui.define([
             const newEpisodesModel = this.byId("episodesCreationTable").getModel();
             const newEpisode = newEpisodeModel.getData();
             const newEpisodes = newEpisodesModel.getData();
+            const seriesTitle = this.byId("seriesCreationForm").getModel().getData().titoloSerie;
 
             this._trimStrings(newEpisode);
 
@@ -130,7 +131,7 @@ sap.ui.define([
                 }
             }
 
-            newEpisode["Serie.titoloSerie"] = this._currentSeries.titoloSerie;
+            newEpisode["Serie.titoloSerie"] = seriesTitle;
 
             // push the episode to the table's model
             newEpisodes.episodi.push(newEpisode);
@@ -318,7 +319,7 @@ sap.ui.define([
 
         _bindModels: function () {
             // main odata model
-            const model = new ODataModel("/core/serie.xsodata", {
+            const model = new ODataModel("/core/xsodata/serie.xsodata", {
                 defaultUpdateMethod: sap.ui.model.odata.UpdateMethod.Put
             });
 
@@ -399,12 +400,12 @@ sap.ui.define([
         },
 
         _createRegex: function () {
-            const alphanum60 = new RegExp("^.{1,60}$");
-            const integer = new RegExp("\\d");
+            const alphanum60 = /^.{1,60}$/;
+            const integer = /\d/;
             return {
                 titoloSerie: alphanum60,
                 genere: alphanum60,
-                anno: new RegExp("^[12][09]\\d{2}$"),
+                anno: /^[12][09]\d{2}$/,
                 regista: alphanum60,
                 titoloPuntata: alphanum60,
                 stagione: integer,

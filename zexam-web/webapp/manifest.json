@@ -15,7 +15,7 @@
 		},
 		"dataSources": {
 			"serie.xsodata": {
-				"uri": "/core/serie.xsodata/",
+				"uri": "/core/xsodata/serie.xsodata/",
 				"type": "OData",
 				"settings": {
 					"localUri": "localService/metadata.xml"
