@@ -214,28 +214,15 @@ sap.ui.define([
             // the new series info and episodes changed by the user
             const updatedSeries = this.byId("seriesCreationForm").getModel().getData();
             const updatedEpisodes = this.byId("episodesCreationTable").getModel().getData().episodi;
-
-            // this will change if the user updates the series' title, and will be used to update its episodes
-            let updatedSeriesTitle = originalSeries.titoloSerie;
+            const seriesTitle = originalSeries.titoloSerie
 
             // assign a group id for the batch request
             const batchId = "series";
             this.getView().getModel().setDeferredGroups([batchId]);
 
             // trigger an update on the series only if the user changes one of its fields
-            if (!Comparator.shallowEquals(originalSeries, updatedSeries)) {
-                model.update(this._getSeriesPath(updatedSeriesTitle), updatedSeries, { groupId: batchId });
-
-                // update the series title for each episode if it was modified
-                if (updatedSeries.titoloSerie !== originalSeries.titoloSerie) {
-                    updatedSeriesTitle = updatedSeries.titoloSerie;
-                    for (const episode of originalEpisodes) {
-                        episode.titoloSerie = updatedSeriesTitle;
-                        const path = this._getEpisodePath(originalSeries.titoloSerie, episode.titoloPuntata);
-                        model.update(path, { groupId: batchId });
-                    }
-                }
-            }
+            if (!Comparator.shallowEquals(originalSeries, updatedSeries))
+                model.update(this._getSeriesPath(seriesTitle), updatedSeries, { groupId: batchId });
 
             // create any new episodes and update those that were modified
             for (const episode of updatedEpisodes) {
@@ -248,7 +235,7 @@ sap.ui.define([
                 } else { // update only if something was modified
                     const ep = originalEpisodes[index];
                     if (ep.stagione !== episode.stagione || ep.regista !== episode.regista) {
-                        const path = this._getEpisodePath(originalSeries.titoloSerie, episode.titoloPuntata);
+                        const path = this._getEpisodePath(seriesTitle, episode.titoloPuntata);
                         model.update(path, episode, { groupId: batchId });
                     }
                 }
@@ -261,7 +248,7 @@ sap.ui.define([
                     && ep.titoloPuntata === original.titoloPuntata
                 );
                 if (index < 0) {
-                    const path = this._getEpisodePath(updatedSeriesTitle, original.titoloPuntata);
+                    const path = this._getEpisodePath(seriesTitle, original.titoloPuntata);
                     model.remove(path, { groupId: batchId });
                 }
             }
@@ -270,6 +257,7 @@ sap.ui.define([
             model.submitChanges({
                 groupId: batchId,
                 success: function (data, res) {
+                    if (!res) return; // there were no changes
                     if (that._isError(res.body)) {
                         that._error("seriesUpdateError");
                     } else {
