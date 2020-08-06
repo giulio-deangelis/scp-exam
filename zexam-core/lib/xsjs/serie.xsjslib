@@ -19,14 +19,6 @@ function update(params) {
     const newSerie = convert.recordSetToJSON(rs, "serie").serie[0];
     ps.close();
     
-    // get the old title
-    query = `select "titoloSerie" from "${params.beforeTableName}"`;
-    ps = params.connection.prepareStatement(query);
-    rs = ps.executeQuery();
-    rs.next();
-    const oldTitle = rs.getNString(1);
-    ps.close();
-    
     // validate data
     if (!newSerie.titoloSerie || !regex.titoloSerie.test(newSerie.titoloSerie))
         throw "Invalid series title";
@@ -40,7 +32,6 @@ function update(params) {
     // then try to update the database
     query = `
         update "Serie" set
-          "titoloSerie" = ?,
           "genere" = ?,
           "anno" = ?,
           "regista" = ?
@@ -48,11 +39,10 @@ function update(params) {
     `;
     
     ps = params.connection.prepareStatement(query);
-    ps.setString(1, newSerie.titoloSerie);
-    ps.setString(2, newSerie.genere);
-    ps.setString(3, newSerie.anno);
-    ps.setString(4, newSerie.regista);
-    ps.setString(5, oldTitle);
+    ps.setString(1, newSerie.genere);
+    ps.setString(2, newSerie.anno);
+    ps.setString(3, newSerie.regista);
+    ps.setString(4, newSerie.titoloSerie);
     ps.executeUpdate(query);
     ps.close();
 }
