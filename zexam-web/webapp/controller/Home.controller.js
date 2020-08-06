@@ -54,6 +54,9 @@ sap.ui.define([
             // bind the episodes table
             this.getView().getModel().read(path, {
                 async: true,
+                urlParameters: {
+                    "$orderby": "stagione,episodio"
+                },
                 success: function (data) {
                     for (const ep of data.results) ep.regista = producer;
                     that.byId("episodesTable").setModel(new JSONModel(data));
@@ -221,8 +224,10 @@ sap.ui.define([
             this.getView().getModel().setDeferredGroups([batchId]);
 
             // trigger an update on the series only if the user changes one of its fields
-            if (!Comparator.shallowEquals(originalSeries, updatedSeries))
+            if (!Comparator.shallowEquals(originalSeries, updatedSeries)) {
+                updatedSeries.titoloSerie = undefined; // disallow title update since it's not possible
                 model.update(this._getSeriesPath(seriesTitle), updatedSeries, { groupId: batchId });
+            }
 
             // create any new episodes and update those that were modified
             for (const episode of updatedEpisodes) {
