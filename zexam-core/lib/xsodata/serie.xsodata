@@ -1,7 +1,7 @@
 service {
 
     "Serie" navigates ("Puntate" as "Puntate")
-    update using "xsjs:serie.xsjslib::update";
+      update using "xsjs:serie.xsjslib::update";
     
 	"Puntata";
 
