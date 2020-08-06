@@ -214,7 +214,7 @@ sap.ui.define([
             // the new series info and episodes changed by the user
             const updatedSeries = this.byId("seriesCreationForm").getModel().getData();
             const updatedEpisodes = this.byId("episodesCreationTable").getModel().getData().episodi;
-            const seriesTitle = originalSeries.titoloSerie
+            const seriesTitle = originalSeries.titoloSerie;
 
             // assign a group id for the batch request
             const batchId = "series";
