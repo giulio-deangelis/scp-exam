@@ -233,7 +233,7 @@ sap.ui.define([
             for (const episode of updatedEpisodes) {
                 const index = originalEpisodes.findIndex(ep =>
                     ep.episodio === episode.episodio
-                    && ep.titoloPuntata === episode.titoloPuntata
+                    && ep.stagione === episode.stagione
                 );
                 if (index < 0) { // create the new episode
                     model.create("/Puntata", episode, { groupId: batchId });
@@ -250,7 +250,7 @@ sap.ui.define([
             for (const original of originalEpisodes) {
                 const index = updatedEpisodes.findIndex(ep =>
                     ep.episodio === original.episodio
-                    && ep.titoloPuntata === original.titoloPuntata
+                    && ep.stagione === original.stagione
                 );
                 if (index < 0) {
                     const path = this._getEpisodePath(seriesTitle, original.titoloPuntata);
@@ -407,8 +407,7 @@ sap.ui.define([
         },
 
         _trimStrings: function (obj) {
-            const keys = Object.keys(obj);
-            for (const key of keys) {
+            for (const key of Object.keys(obj)) {
                 const prop = obj[key];
                 if (typeof prop === "string")
                     obj[key] = prop.trim();
