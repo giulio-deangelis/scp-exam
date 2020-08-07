@@ -64,7 +64,7 @@ sap.ui.define([
     let serie = null;
     const odataPath = "/core/xsodata/serie.xsodata"
     const updateMethod = sap.ui.model.odata.UpdateMethod.Put
-    
+
     // the series editor data
     const EditorData = function (data) {
         if (data) {
@@ -81,7 +81,7 @@ sap.ui.define([
 
     // the groupId for batch operations
     const groupId = "1";
-    
+
     // to know whether the user is editing an existing series or creating a new one
     let editing = false;
 
@@ -93,22 +93,22 @@ sap.ui.define([
             serie = new ODataModel(odataPath, {
                 defaultUpdateMethod: updateMethod
             });
-            
+
             serie.setDeferredGroups([groupId]);
-            
+
             // bind the main model
             this.getView().setModel(serie);
-            
+
             // bind the series creation page models
             this.byId("seriesCreationForm").setModel(editor);
-            this.byId("episodeCreationForm").setModel(editor);
+            // this.byId("episodeCreationForm").setModel(editor);
             this.byId("episodesCreationTable").setModel(editor);
-            
+
             this._readSerie();
-            
+
             this._setupDebugObject();
         },
-        
+
         navTo: function (id) {
             this.byId("splitter").toDetail(this.createId(id));
             /* Nota: si può passare una payload al metodo toDetail
@@ -119,13 +119,37 @@ sap.ui.define([
              */
         },
 
+        actionAct: function (oEvent) {
+            this.navTo("welcome");
+        },
+
+        onExitDesc: function () {
+            this._oDialog.close();
+        },
+        
+        onCreateDialog: function (oEvent) {
+            if (this._oDialog & this._oDialog !== undefined) {
+                this._oDialog.destroy();
+                this._oDialog = undefined;
+
+            }
+            if (!this._oDialog) {
+                this._oDialog = sap.ui.xmlfragment("zexam.zexam-web.view.fragment.insPuntata", this.getView().getController());
+                this.getView().addDependent(this._oDialog);
+            }
+
+            // return this._oDialog;
+            this._oDialog.open();
+            this._oDialog.setModel(editor);
+        },
+
         onSeriesPress: function (ev) {
             const context = ev.getParameter("listItem").getBindingContext();
 
             // bind the series form and the episodes table
             this.byId("seriesDetailsForm").bindElement(context.getPath());
             this.byId("episodesTable").bindElement(context.getPath());
-            
+
             this.navTo("seriesDetail");
         },
 
@@ -137,13 +161,13 @@ sap.ui.define([
 
         onEditButtonPress: function () {
             const data = editor.getData();
-            
+
             data.serie = Object.assign({}, this._getCurrentSerie());
             data.puntata = {};
             data.puntate = this._getCurrentPuntate().slice();
             editor.refresh();
             editing = true;
-            
+
             this.navTo("seriesCreation");
         },
 
@@ -177,6 +201,7 @@ sap.ui.define([
             puntate.push(Object.assign({}, newPuntata)); // clone to avoid overriding
             editor.getData().puntata = {};
             editor.refresh();
+            this._oDialog.close();
         },
 
         onRemoveEpsButtonPress: function (ev) {
@@ -198,7 +223,7 @@ sap.ui.define([
         onDeleteButtonPress: function () {
             this._deleteSeries();
         },
-        
+
         _readSerie: function () {
             const that = this;
             serie.read("/Serie", {
@@ -253,7 +278,7 @@ sap.ui.define([
 
         _updateSeries: function () {
             const that = this;
-            
+
             // the new series info and episodes changed by the user
             const oldSerie = this._getCurrentSerie();
             const oldPuntate = this._getCurrentPuntate();
@@ -304,7 +329,7 @@ sap.ui.define([
                         that._error("seriesUpdateError");
                     } else {
                         that._toast("seriesUpdateSuccess");
-                        that.navTo("seriesDetail"); 
+                        that.navTo("seriesDetail");
                     }
                 },
                 error: function (err) {
@@ -317,7 +342,7 @@ sap.ui.define([
             const that = this;
             const currentSerie = this._getCurrentSerie();
             const currentPuntate = this._getCurrentPuntate();
-            const titoloSerie = currentSerie.titoloSerie;
+            const titoloSerie = currentSerie.titoloSerie.replaceAll(" ", "%20");
 
             serie.remove(`/Serie('${titoloSerie}')`, { groupId: groupId });
             for (const puntata of currentPuntate) {
@@ -354,13 +379,13 @@ sap.ui.define([
         _getSeriesPath: function (titoloSerie) {
             return `/Serie('${titoloSerie.replaceAll(" ", "%20")}')`;
         },
-        
+
         _getCurrentSerie: function () {
             return this.byId("seriesDetailsForm")
                 .getBindingContext()
                 .getObject();
         },
-        
+
         _getCurrentPuntate: function () {
             return this.byId("episodesTable")
                 .getItems()
@@ -431,7 +456,7 @@ sap.ui.define([
         _i18n: function (property) {
             return this.getView().getModel("i18n").getProperty(property);
         },
-        
+
         _setupDebugObject: function () {
             debug.controller = this;
             debug.serie = serie;
