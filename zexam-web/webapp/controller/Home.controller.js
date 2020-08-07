@@ -347,7 +347,7 @@ sap.ui.define([
 
         _getEpisodePath: function (titoloSerie, titoloPuntata) {
             const escapedTitoloSerie = titoloSerie.replaceAll(" ", "%20");
-            const escapedTitoloPutnata = titoloPuntata.replaceAll(" ", "%20");
+            const escapedTitoloPuntata = titoloPuntata.replaceAll(" ", "%20");
             return `/Puntata(Serie.titoloSerie='${escapedTitoloSerie}',titoloPuntata='${escapedTitoloPuntata}')`;
         },
 
