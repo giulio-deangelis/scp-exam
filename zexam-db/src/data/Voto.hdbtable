@@ -1,0 +1,6 @@
+COLUMN TABLE "Voto" (
+    "titoloSerie" NVARCHAR(60) COMMENT 'Titolo Serie',
+    "utente" NVARCHAR(60) COMMENT 'Utente',
+    "voto" INTEGER COMMENT 'Voto',
+    PRIMARY KEY ("titoloSerie", "utente")
+)

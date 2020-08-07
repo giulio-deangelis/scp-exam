@@ -1,13 +1,21 @@
 service {
 
-    "Serie" navigates ("Puntate" as "Puntate")
+    "Serie"
+      navigates ("Puntate" as "Puntate", "Voti" as "Voti")
       update using "xsjs:serie.xsjslib::update";
     
 	"Puntata";
+	"Voto";
 
 	association "Puntate"
 	  principal "Serie"("titoloSerie")
 	  multiplicity "1"
 	  dependent "Puntata"("Serie.titoloSerie")
 	  multiplicity "*";
+	  
+    association "Voti"
+      principal "Serie"("titoloSerie")
+      multiplicity "1"
+      dependent "Voto"("titoloSerie")
+      multiplicity "*";
 }
