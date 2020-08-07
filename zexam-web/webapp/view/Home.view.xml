@@ -1,201 +1,191 @@
-<mvc:View controllerName="zexam.zexam-web.controller.Home" xmlns:mvc="sap.ui.core.mvc" displayBlock="true" xmlns="sap.m">
-  <Shell id="shell" appWidthLimited="false">
-    <App id="app">
-      <pages>
-        <Page id="page" title="{i18n>title}">
-          <content>
-            <SplitApp id="splitter" initialDetail="welcome">
-              <masterPages>
-                <Page id="master">
-                  <content>
-                    <VBox width="100%" direction="Column">
-                      <items>
-                        <List items="{/Serie}" growing="true" growingScrollToLoad="true" noDataText="{i18n>noData}" id="seriesList" itemPress="onSeriesPress">
-                          <StandardListItem title="{titoloSerie}" type="Navigation"/>
-                        </List>
-                        <HBox width="100%" id="masterBottomButtonBar" justifyContent="End">
-                          <items>
-                            <Button press="onAddButtonPress" id="addButton" icon="sap-icon://add"/>
-                          </items>
-                        </HBox>
-                      </items>
-                    </VBox>
-                  </content>
-                </Page>
-              </masterPages>
-              <detailPages>
-                <Page id="welcome">
-                  <content>
-                    <VBox width="100%" id="welcomeContainer">
-                      <items>
-                        <Title text="{i18n>welcome}"/>
-                        <Text text="{i18n>welcomeText}"/>
-                      </items>
-                    </VBox>
-                  </content>
-                </Page>
-                <Page id="seriesDetail">
-                  <content>
-                    <VBox width="100%" direction="Column">
-                      <items>
-                        <sap.ui.layout.form:SimpleForm editable="true" layout="ResponsiveGridLayout" xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" id="seriesDetailsForm">
-                          <sap.ui.layout.form:content>
-                            <sap.ui.core:Title text="{titoloSerie}" level="H3"/>
-                            <Label text="{i18n>genere}"/>
-                            <Text text="{genere}"/>
-                            <Label text="{i18n>anno}"/>
-                            <Text text="{anno}"/>
-                            <Label text="{i18n>regista}"/>
-                            <Text text="{regista}"/>
-                          </sap.ui.layout.form:content>
-                        </sap.ui.layout.form:SimpleForm>
-                        <Label text="{i18n>puntate}" id="epsLabel"/>
-                        <Table items="{Puntate}" growing="true" growingScrollToLoad="true" noDataText="{i18n>noData}" id="episodesTable">
-                          <items>
-                            <ColumnListItem type="Active">
-                              <cells>
-                                <Text text="{episodio}"/>
-                                <Text text="{stagione}"/>
-                                <Text text="{titoloPuntata}"/>
-                                <Text text="{regista}"/>
-                              </cells>
-                            </ColumnListItem>
-                          </items>
-                          <columns>
-                            <Column>
-                              <header>
-                                <Label text="{i18n>episodio}"/>
-                              </header>
-                            </Column>
-                            <Column>
-                              <header>
-                                <Label text="{i18n>stagione}"/>
-                              </header>
-                            </Column>
-                            <Column>
-                              <header>
-                                <Label text="{i18n>titoloPuntata}"/>
-                              </header>
-                            </Column>
-                            <Column>
-                              <header>
-                                <Label text="{i18n>regista}"/>
-                              </header>
-                            </Column>
-                          </columns>
-                        </Table>
-                        <HBox width="100%" justifyContent="End" id="seriesDetailBottomButtonBar">
-                          <items>
-                            <Button text="{i18n>edit}" press="onEditButtonPress"/>
-                            <Button text="{i18n>delete}" press="onDeleteButtonPress"/>
-                          </items>
-                        </HBox>
-                      </items>
-                    </VBox>
-                  </content>
-                </Page>
-                <Page id="seriesCreation">
-                  <content>
-                    <VBox width="100%" direction="Column" id="seriesFormContainer">
-                      <items>
-                        <sap.ui.layout.form:SimpleForm editable="true" layout="ResponsiveGridLayout" xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" id="seriesCreationForm">
-                          <sap.ui.layout.form:content>
-                            <sap.ui.core:Title text="{i18n>createNewSeries}"/>
-                            <Label text="{i18n>titoloSerie}"/>
-                            <Input value="{/serie/titoloSerie}"/>
-                        <Label text="{i18n>genere}"/>
-                            <Input value="{/serie/genere}"/>
-                            <Label text="{i18n>anno}"/>
-                            <Input value="{/serie/anno}" maxLength="4"/>
-                            <Label text="{i18n>regista}"/>
-                            <Input value="{/serie/regista}"/>
-                          </sap.ui.layout.form:content>
-                        </sap.ui.layout.form:SimpleForm>
-                        <Panel width="100%" expandable="true" expanded="true">
-                          <headerToolbar>
-                            <Toolbar>
-                              <Title text="{i18n>insertEpisode}"/>
-                            </Toolbar>
-                          </headerToolbar>
-                          <content>
-                            <VBox width="100%" direction="Column" id="vbox2">
-                              <items>
-                                <sap.ui.layout.form:SimpleForm xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" editable="true" layout="ResponsiveGridLayout" xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" id="episodeCreationForm">
-                                  <sap.ui.layout.form:content>
-                                    <Label text="{i18n>episodio}"/>
-                                    <Input value="{/puntata/episodio}"/>
-                                    <Label text="{i18n>stagione}"/>
-                                    <Input value="{/puntata/stagione}"/>
-                                    <Label text="{i18n>titoloEpisodio}"/>
-                                    <Input value="{/puntata/titoloPuntata}"/>
-                                    <Label text="{i18n>regista}"/>
-                                    <Input value="{/puntata/regista}"/>
-                                  </sap.ui.layout.form:content>
-                                </sap.ui.layout.form:SimpleForm>
-                                <Button press="onSaveEpButtonPress" text="{i18n>saveEpisode}" id="saveEpButton"/>
-                                <Panel xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" width="100%" expandable="true" expanded="true">
-                                  <headerToolbar>
-                                    <Toolbar>
-                                      <Title text="{i18n>puntate}"/>
-                                      <ToolbarSpacer/>
-                                      <Button press="onRemoveEpsButtonPress" text="{i18n>remove}" icon="sap-icon://sys-minus" type="Reject" id="removeEpsButton"/>
-                                    </Toolbar>
-                                  </headerToolbar>
-                                  <content>
-                                    <Table items="{/puntate}" noDataText="{i18n>noData}" id="episodesCreationTable" mode="MultiSelect">
-                                      <items>
-                                        <ColumnListItem type="Active">
-                                          <cells>
-                                            <Text text="{episodio}"/>
-                                            <Text text="{stagione}"/>
-                                            <Text text="{titoloPuntata}"/>
-                                            <Text text="{regista}"/>
-                                          </cells>
-                                        </ColumnListItem>
-                                      </items>
-                                      <columns>
-                                        <Column>
-                                          <header>
-                                            <Label text="{i18n>episodio}"/>
-                                          </header>
-                                        </Column>
-                                        <Column>
-                                          <header>
-                                            <Label text="{i18n>stagione}"/>
-                                          </header>
-                                        </Column>
-                                        <Column>
-                                          <header>
-                                            <Label text="{i18n>titoloPuntata}"/>
-                                          </header>
-                                        </Column>
-                                        <Column>
-                                          <header>
-                                            <Label text="{i18n>regista}"/>
-                                          </header>
-                                        </Column>
-                                      </columns>
-                                    </Table>
-                                  </content>
-                                </Panel>
-                              </items>
-                            </VBox>
-                          </content>
-                        </Panel>
-                        <HBox width="100%" justifyContent="End" id="seriesCreationButtonBar">
-                          <items>
-                            <Button press="onSaveSeriesButtonPress" text="{i18n>save}"/>
-                          </items>
-                        </HBox>
-                      </items>
-                    </VBox>
-                  </content>
-                </Page>
-              </detailPages>
-            </SplitApp>
-          </content>
-        </Page>
-      </pages>
-    </App>
-  </Shell>
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout"
+	controllerName="zexam.zexam-web.controller.Home" displayBlock="true" class="page">
+	<Shell id="shell" appWidthLimited="false">
+		<App id="app">
+			<pages>
+				<Page id="page" title="{i18n>title}">
+					<content>
+						<FlexBox width="100%" height="50%" id="box0">
+							<Carousel id="idCarousel" loop="false" pageChanged="pageChanged">
+								<Image src="https://images.everyeye.it/img-articoli/breaking-bad-storia-successo-importanza-serie-vince-gilligan-v5-47057.jpg" width="100%"/>
+								<Image src="https://i.gifer.com/OZJb.gif" width="100%"/>
+								<Image src="https://blog.uniecampus.it/wp-content/uploads/2018/12/StrangerThingsTitleCard-1-807x561.jpg" width="100%"/>
+								<Image src="https://cc-media-foxit.fichub.com/image/fox-it-mondofox/753860f9-3623-4407-8023-ea428cacd0a0/joyce.gif" width="100%"/>
+								<Image src="https://www.naturalborngamers.it/wp-content/uploads/2019/04/la-casa-di-carta-1300x680-1-1024x536.jpg" width="100%"/>
+								<Image src="https://64.media.tumblr.com/8a3a33c6071ef7583a42b76f7ce6752b/tumblr_p2r4ofutsY1slo9v5o8_500.gifv" width="100%"/>
+								<Image src="https://miro.medium.com/max/1200/1*u9oMlgcW6PwwTtxBKdGzUQ.jpeg" width="100%"/>
+								<Image src="https://media3.giphy.com/media/YmbhQlUXufpB3tm738/giphy.gif" width="100%"/>
+								<Image src="https://leganerd.com/wp-content/uploads/2015/12/vikings.jpg" width="100%"/>
+								<Image src="https://steamuserimages-a.akamaihd.net/ugc/865104814166422597/963EB358ACE71E8D97DA8042D01FEDCFB8EC0879/" width="100%"/>
+							</Carousel>
+						</FlexBox>
+						<SplitApp id="splitter" initialDetail="welcome">
+							<masterPages>
+								<Page id="master" class="page">
+									<content>
+										<VBox width="100%" direction="Column">
+											<items>
+												<List items="{/Serie}" growing="true" growingScrollToLoad="true" noDataText="{i18n>noData}" id="seriesList" itemPress="onSeriesPress">
+													<StandardListItem title="{titoloSerie}" type="Navigation" class="page"/>
+												</List>
+												<HBox width="100%" id="masterBottomButtonBar" justifyContent="End"></HBox>
+											</items>
+										</VBox>
+									</content>
+									<footer>
+										<Toolbar class="page">
+											<Button press="onAddButtonPress" id="addButton" text="Inserisci" icon="sap-icon://add" type="Emphasized"/>
+										</Toolbar>
+									</footer>
+								</Page>
+							</masterPages>
+							<detailPages>
+								<Page id="welcome" class="imag">
+									<content>
+										<VBox width="100%" id="welcomeContainer" class="page">
+											<items>
+												<Title text="{i18n>welcome}" class="titolo"/>
+												<Text text="{i18n>welcomeText}" class="titolo1"/>
+											</items>
+										</VBox>
+									</content>
+								</Page>
+								<Page id="seriesDetail" class="sfondo">
+									<content>
+										<VBox width="100%" direction="Column">
+											<items>
+												<sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" editable="true"
+													layout="ResponsiveGridLayout" id="seriesDetailsForm">
+													<sap.ui.layout.form:content>
+														<sap.ui.core:Title text="{titoloSerie}" level="H3"/>
+														<Label text="{i18n>genere}"/>
+														<Text text="{genere}"/>
+														<Label text="{i18n>anno}"/>
+														<Text text="{anno}"/>
+														<Label text="{i18n>regista}"/>
+														<Text text="{regista}"/>
+														<Label text="Valutazione" labelFor="RI_S"/>
+														<RatingIndicator id="RI_S" maxValue="5" class="sapUiSmallMarginBottom" value="4" iconSize="16px" tooltip="Rating Tooltip"/>
+													</sap.ui.layout.form:content>
+												</sap.ui.layout.form:SimpleForm>
+												<Label text="{i18n>puntate}" id="epsLabel"/>
+												<Table items="{Puntate}" noDataText="{i18n>noData}" id="episodesTable">
+													<items>
+														<ColumnListItem type="Active">
+															<cells>
+																<Text text="{episodio}"/>
+																<Text text="{stagione}"/>
+																<Text text="{titoloPuntata}"/>
+																<Text text="{regista}"/>
+															</cells>
+														</ColumnListItem>
+													</items>
+													<columns>
+														<Column>
+															<header>
+																<Label text="{i18n>episodio}"/>
+															</header>
+														</Column>
+														<Column>
+															<header>
+																<Label text="{i18n>stagione}"/>
+															</header>
+														</Column>
+														<Column>
+															<header>
+																<Label text="{i18n>titoloPuntata}"/>
+															</header>
+														</Column>
+														<Column>
+															<header>
+																<Label text="{i18n>regista}"/>
+															</header>
+														</Column>
+													</columns>
+												</Table>
+											</items>
+										</VBox>
+									</content>
+									<footer>
+										<OverflowToolbar>
+											<Button text="Home" id="home1" press="actionAct"/>
+											<Button text="{i18n>edit}" press="onEditButtonPress"/>
+										</OverflowToolbar>
+									</footer>
+								</Page>
+								<Page id="seriesCreation" class="sfondo">
+									<content>
+										<VBox width="100%" direction="Column" id="seriesFormContainer">
+											<items>
+												<sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" editable="true"
+													layout="ResponsiveGridLayout" id="seriesCreationForm">
+													<sap.ui.layout.form:content>
+														<sap.ui.core:Title text="{i18n>createNewSeries}" class="titolo3"/>
+														<Label text="{i18n>titoloSerie}" class="titolo3"/>
+														<Input value="{/serie/titoloSerie}" width="50%"/>
+														<Label text="{i18n>genere}" class="titolo3"/>
+														<Input value="{/serie/genere}" width="50%"/>
+														<Label text="{i18n>anno}" class="titolo3"/>
+														<Input value="{/serie/anno}" width="50%" maxLength="4"/>
+													</sap.ui.layout.form:content>
+												</sap.ui.layout.form:SimpleForm>
+												<Table items="{/episodi}" noDataText="{i18n>noData}" id="episodesCreationTable" mode="MultiSelect">
+													<headerToolbar>
+														<Toolbar>
+															<ToolbarSpacer/>
+															<Button text="Aggiungi Puntata" width="230px" press=".onCreateDialog" type="Reject"/>
+														</Toolbar>
+													</headerToolbar>
+													<items>
+														<ColumnListItem type="Active">
+															<cells>
+																<Text text="{episodio}"/>
+																<Text text="{stagione}"/>
+																<Text text="{titoloPuntata}"/>
+																<Text text="{regista}"/>
+															</cells>
+														</ColumnListItem>
+													</items>
+													<columns>
+														<Column>
+															<header>
+																<Label text="{i18n>episodio}"/>
+															</header>
+														</Column>
+														<Column>
+															<header>
+																<Label text="{i18n>stagione}"/>
+															</header>
+														</Column>
+														<Column>
+															<header>
+																<Label text="{i18n>titoloPuntata}"/>
+															</header>
+														</Column>
+														<Column>
+															<header>
+																<Label text="{i18n>regista}"/>
+															</header>
+														</Column>
+													</columns>
+												</Table>
+												<HBox width="100%" justifyContent="End" id="seriesCreationButtonBar"></HBox>
+											</items>
+										</VBox>
+									</content>
+									<footer>
+										<Toolbar class="page">
+											<Button text="Home" id="home" press="actionAct"/>
+											<Button icon="sap-icon://save" press="onSaveSeriesButtonPress" text="{i18n>save}"/>
+											<Button text="{i18n>delete}" press="onDeleteButtonPress"/>
+										</Toolbar>
+									</footer>
+								</Page>
+							</detailPages>
+						</SplitApp>
+					</content>
+				</Page>
+			</pages>
+		</App>
+	</Shell>
 </mvc:View>
