@@ -129,11 +129,24 @@
 														<Input value="{/serie/anno}" width="50%" maxLength="4"/>
 													</sap.ui.layout.form:content>
 												</sap.ui.layout.form:SimpleForm>
-												<Table items="{/episodi}" noDataText="{i18n>noData}" id="episodesCreationTable" mode="MultiSelect">
+												<sap.ui.layout.form:SimpleForm xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" editable="true" layout="ResponsiveGridLayout"
+													xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" id="episodeCreationForm">
+													<sap.ui.layout.form:content>
+														<Label text="{i18n>episodio}"/>
+														<Input value="{/puntata/episodio}"/>
+														<Label text="{i18n>stagione}"/>
+														<Input value="{/puntata/stagione}"/>
+														<Label text="{i18n>titoloEpisodio}"/>
+														<Input value="{/puntata/titoloPuntata}"/>
+														<Label text="{i18n>regista}"/>
+														<Input value="{/puntata/regista}"/>
+													</sap.ui.layout.form:content>
+												</sap.ui.layout.form:SimpleForm>
+												<Table items="{/puntate}" noDataText="{i18n>noData}" id="episodesCreationTable" mode="MultiSelect">
 													<headerToolbar>
 														<Toolbar>
 															<ToolbarSpacer/>
-															<Button text="Aggiungi Puntata" width="230px" press=".onCreateDialog" type="Reject"/>
+															<Button text="Aggiungi Puntata" width="230px" press="onSaveEpButtonPress" type="Reject"/>
 														</Toolbar>
 													</headerToolbar>
 													<items>
